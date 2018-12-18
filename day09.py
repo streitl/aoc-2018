@@ -53,7 +53,9 @@ def play(nplayers, nmarbles):
 		max_score = max(max_score, v)
 	return max_score
 
-text = "458 players; last marble is worth 72019 points".split(' ')
+f = open("input09.txt")
+text = f.readlines()[0].rstrip().split(' ')
+f.close()
 
 players = int(text[0])
 marbles = int(text[6])
