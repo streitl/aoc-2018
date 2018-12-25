@@ -44,5 +44,6 @@ for line in risk_level:
 	
 		risk += elem
 
-
 print "Part 1 :", risk
+
+
