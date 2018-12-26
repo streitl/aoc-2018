@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from heapq import heapify, heappush, heappop
+
 class Nanobot:
 
 	def __init__(self, x, y, z, r):
@@ -10,6 +12,49 @@ class Nanobot:
 	
 	def distance_to(self, other):
 		return abs(self.x - other.x) + abs(self.y - other.y) + abs(self.z - other.z)
+		
+	def range_overlaps_with_cube(self, (x1, y1, z1), (x2, y2, z2)):
+		assert x1 <= x2 and y1 <= y2 and z1 <= z2
+		
+		distance = 0
+		
+		if self.x < x1:
+			distance += x1 - self.x
+		elif self.x > x2:
+			distance += self.x - x2
+		
+		if self.y < y1:
+			distance += y1 - self.y
+		elif self.y > y2:
+			distance += self.y - y2
+		
+		if self.z < z1:
+			distance += z1 - self.z
+		elif self.z > z2:
+			distance += self.z - z2
+			
+		return distance <= self.r
+
+
+
+def add_to_heap(x, y, z):
+	
+	global heap
+	global s
+	global nanobots
+	
+	x2 = x + s - 1
+	y2 = y + s - 1
+	z2 = z + s - 1
+	
+	in_range = 0
+	for bot in nanobots:
+		if bot.range_overlaps_with_cube((x, y, z), (x2, y2, z2)):
+			in_range += 1
+	
+	if in_range > 0:
+		distance = min(abs(x), abs(x2)) + min(abs(y), abs(y2)) + min(abs(z), abs(z2))
+		heappush(heap, (-in_range, distance, s, x, y, z) )
 
 
 f = open("input23.txt")
@@ -46,33 +91,41 @@ print "Part 1 :", len(in_range)
 
 
 # Part 2
-can_reach = dict()
 
-for nano in nanobots:
+xmin = min(bot.x for bot in nanobots)
+xmax = max(bot.x for bot in nanobots)
 
-	for x in range(nano.x - nano.r, nano.x + nano.r + 1):
-		y_freedom = nano.r - abs(x - nano.x)
-		
-		for y in range(nano.y - y_freedom, nano.y + y_freedom + 1):
-			z_freedom = nano.r - abs(x - nano.x) - abs(y - nano.y)
-			
-			for z in range(nano.z - z_freedom, nano.z + z_freedom + 1):
-			
-				if (x, y, z) in can_reach:
-					can_reach[(x, y, z)] += 1
-				else:
-					can_reach[(x, y, z)] = 1
+ymin = min(bot.y for bot in nanobots)
+ymax = max(bot.y for bot in nanobots)
 
-closest_d = -1
-best_point = None
-reached_by = 0
+zmin = min(bot.z for bot in nanobots)
+zmax = max(bot.z for bot in nanobots)
 
-for (k, v) in can_reach.iteritems():
-	d = abs(k[0]) + abs(k[1]) + abs(k[2])
-	if best_point == None or v > reached_by or (v == reached_by and d < closest_d):
-		best_point = k
-		reached_by = v
-		closest_d = d
 
-print "Part 2 :", closest_d, best_point, reached_by
+s = 1  # size of the cube, a power of two
+while s < max(xmax - xmin, ymax - ymin, zmax - zmin):
+	s *= 2
+
+
+heap = [] 
+
+add_to_heap(xmin, ymin, zmin)
+
+while heap:
+	in_range, distance, s, x, y, z = heappop(heap)
+	
+	if s == 1:
+		print "Part 2 :", distance
+		break
+	
+	s = s // 2
+	
+	add_to_heap(x, y, z)
+	add_to_heap(x, y, z+s)
+	add_to_heap(x, y+s, z)
+	add_to_heap(x, y+s, z+s)
+	add_to_heap(x+s, y, z)
+	add_to_heap(x+s, y, z+s)
+	add_to_heap(x+s, y+s, z)
+	add_to_heap(x+s, y+s, z+s)
 
