@@ -322,43 +322,7 @@ def fight2(elves, goblins, field, extra_attack):
 
 
 def part2(field):
-	
-	'''extra_attack = 21
-	
-	fails = set()
-	works = dict()
-	
-	diff = 1
-	
-	found = False
-	while not found:
-	
-		(new_field, elves, goblins) = init_fighters(field, extra_attack)
-		
-		(elves_won, rounds) = fight2(elves, goblins, new_field, extra_attack)
-		
-		if elves_won:
-			works[extra_attack] = get_score(elves, goblins, rounds)
-			
-			if extra_attack - 1 in fails:
-				print "Part 2 :", works[extra_attack]
 
-				found = True
-				
-			else:
-				diff = max(1, diff // 2)
-				extra_attack -= diff
-				
-		else:
-			fails.add(extra_attack)
-			
-			if extra_attack + 1 in works:
-				print "Part 2 :", works[extra_attack + 1]
-				found = True
-			
-			if extra_attack + 2 * diff not in works:
-				diff *= 2
-			extra_attack += diff'''
 	extra_attack = 1
 	
 	found = False
@@ -441,7 +405,7 @@ f.close()
 
 field = [ [x for x in y.rstrip()] for y in lines ]
 
-#part1(field)
+part1(field)
 
 part2(field)
 
