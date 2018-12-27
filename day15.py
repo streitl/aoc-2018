@@ -159,7 +159,7 @@ def get_score(elves, goblins, rounds):
 
 
 
-def fight1(elves, goblins):
+def fight1(elves, goblins, field):
 	over = False
 	rounds = 0
 
@@ -221,19 +221,26 @@ def fight1(elves, goblins):
 def init_fighters(field, extra_attack = 0):
 	elves = []
 	goblins = []
-
+	new_field = []
+	
 	for y in range(len(field)):
+		line = []
 		for x in range(len(field[y])):
 		
 			if field[y][x] == "E":
-				field[y][x] = "."
+				line.append(".")
 				elves.append( Elf(x, y, 3 + extra_attack) )
 				
 			elif field[y][x] == "G":
-				field[y][x] = "."
+				line.append(".")
 				goblins.append( Goblin(x, y) )
+			
+			else:
+				line.append(field[y][x])
+		
+		new_field.append(line)
 				
-	return (elves, goblins)
+	return (new_field, elves, goblins)
 
 
 
@@ -241,25 +248,130 @@ def init_fighters(field, extra_attack = 0):
 
 def part1(field):
 	
-	(elves, goblins) = init_fighters(field)
+	(new_field, elves, goblins) = init_fighters(field)
 	
-	rounds = fight1(elves, goblins)
+	rounds = fight1(elves, goblins, new_field)
 
 	print "Part 1 :", get_score(elves, goblins, rounds)
 
 
 
+
+
+
+def fight2(elves, goblins, field, extra_attack):
+	over = False
+	rounds = 0
+
+	while not over:
+		
+		units = elves + goblins
+		units.sort( key = lambda unit : (unit.y, unit.x) )
+		
+		print "After", rounds, "rounds : (Elves are boosted by", extra_attack, ")"
+		print_state(field, elves, goblins)
+		
+		for unit in units:
+		
+			if unit.hp <= 0:
+				continue
+			
+			remaining_units = [ u for u in units if u.hp > 0 ]
+			
+			enemies = []
+			if unit.__repr__().split(" ")[0] == "Elf":
+				enemies = goblins
+			else:
+				enemies = elves
+				
+			if len(enemies) == 0:
+				over = True
+				break
+			
+			to_attack = find_target(unit, enemies, field)
+			
+			if to_attack == None:
+			
+				has_moved = move(unit, enemies, field, remaining_units)
+				if has_moved:
+					to_attack = find_target(unit, enemies, field)
+				
+			
+			if to_attack != None:
+			
+				unit.attack(to_attack)
+				
+				if to_attack.isdead():
+					if to_attack.__repr__().split(" ")[0] == "Elf":
+						return (False, -1)
+					else:
+						goblins = [gob for gob in goblins if to_attack != gob]
+				
+		
+		if not over:
+			rounds += 1
+	
+	
+	if len(elves) == 0:
+		return (False, -1)
+	else:
+		return (True, rounds)
+
+
+
+
+
 def part2(field):
 	
-	extra_attack = 1
-	too_low = True
+	'''extra_attack = 21
+	
+	fails = set()
+	works = dict()
+	
+	diff = 1
 	
 	found = False
 	while not found:
-		if too_low:
-			extra_attack
-		(elves, goblins) = init_fighters(field)
+	
+		(new_field, elves, goblins) = init_fighters(field, extra_attack)
 		
+		(elves_won, rounds) = fight2(elves, goblins, new_field, extra_attack)
+		
+		if elves_won:
+			works[extra_attack] = get_score(elves, goblins, rounds)
+			
+			if extra_attack - 1 in fails:
+				print "Part 2 :", works[extra_attack]
+
+				found = True
+				
+			else:
+				diff = max(1, diff // 2)
+				extra_attack -= diff
+				
+		else:
+			fails.add(extra_attack)
+			
+			if extra_attack + 1 in works:
+				print "Part 2 :", works[extra_attack + 1]
+				found = True
+			
+			if extra_attack + 2 * diff not in works:
+				diff *= 2
+			extra_attack += diff'''
+	extra_attack = 1
+	
+	found = False
+	while not found:
+		(new_field, elves, goblins) = init_fighters(field, extra_attack)
+		
+		(elves_won, rounds) = fight2(elves, goblins, new_field, extra_attack)
+		
+		if elves_won:
+			print "Part 2 :", get_score(elves, goblins, rounds)
+			found = True
+		else:
+			extra_attack += 1
 
 
 class Unit:
@@ -329,6 +441,7 @@ f.close()
 
 field = [ [x for x in y.rstrip()] for y in lines ]
 
-part1(field)
+#part1(field)
 
+part2(field)
 
